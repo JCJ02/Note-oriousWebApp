@@ -363,6 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Prevent pushing sensitive config files
-appsettings.json
-appsettings.Development.json
-appsettings.*.json
+**/appsettings.json
+**/appsettings.*.json
