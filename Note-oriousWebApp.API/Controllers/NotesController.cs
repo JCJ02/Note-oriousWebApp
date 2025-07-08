@@ -27,11 +27,11 @@ namespace note_oriouswebapp.api.controllers
                 // simple validation
                 if (string.IsNullOrWhiteSpace(note.Title))
                 {
-                    return BadRequest("Title is required!");
+                    return BadRequest("Title is Required!");
                 }
                 else if (string.IsNullOrWhiteSpace(note.Content))
                 {
-                    return BadRequest("Content is required!");
+                    return BadRequest("Content is Required!");
                 }
 
                 var create = await _notesService.Create(note.Title, note.Content);
@@ -39,10 +39,10 @@ namespace note_oriouswebapp.api.controllers
                 // return 201 created with location of the new note
                 return CreatedAtAction(nameof(GetNoteByID), new { id = create.Id }, create);
             }
-            catch (Exception error)
+            catch (Exception)
             {
                 // log the exception (not implemented here)
-                return StatusCode(500, "an error occurred while creating the note.");
+                return StatusCode(500, "An Error Occured!");
             }
 
         }
@@ -52,10 +52,18 @@ namespace note_oriouswebapp.api.controllers
         [HttpGet]
         public async Task<IActionResult> GetAllNotes()
         {
-            var notes = await _notesService.GetAllNotes();
-            if (notes == null || notes.Count == 0)
-                return NotFound("no notes found!");
-            return Ok(notes);
+            try
+            {
+                var notes = await _notesService.GetAllNotes();
+                if (notes == null || notes.Count == 0)
+                    return NotFound("Notes not Found!");
+                return Ok(notes);
+            }
+            catch (Exception)
+            {
+                // log the exception (not implemented here)
+                return StatusCode(500, "An Error Occured!");
+            }
         }
 
         // get /api/notes/{id}
@@ -63,11 +71,19 @@ namespace note_oriouswebapp.api.controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetNoteByID(int id)
         {
-            var note = await _notesService.GetNoteByID(id);
-            if (note == null)
-                return BadRequest("note not found!");
+            try
+            {
+                var note = await _notesService.GetNoteByID(id);
+                if (note == null)
+                    return BadRequest("Note not Found!");
 
-            return Ok(note);
+                return Ok(note);
+            }
+            catch (Exception)
+            {
+                // log the exception (not implemented here)
+                return StatusCode(500, "An Error Occured!");
+            }
         }
 
 
