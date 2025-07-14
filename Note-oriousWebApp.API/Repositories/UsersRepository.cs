@@ -54,11 +54,27 @@ namespace Note_oriousWebApp.API.Repositories
         public async Task<UsersModel?> GetUserByID(int id)
         {
             return await _context.Users
-                .FirstOrDefaultAsync(users => users.Id == id && users.DeletedAt == null); // Get user if not deleted
+                .FirstOrDefaultAsync(user => user.Id == id && user.DeletedAt == null);
+        }
+
+        // GET the user and account method
+        public async Task<UsersModel?> GetUserAndAccountByID(int id)
+        {
+            return await _context.Users
+                .Include(user => user.Account)
+                .FirstOrDefaultAsync(user => user.Id == id && user.DeletedAt == null);
         }
 
         // UPDATE a user method
         public async Task<UsersModel> Update(UsersModel user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
+        // SOFT-DELETE a user method
+        public async Task<UsersModel> SoftDelete(int id, UsersModel user)
         {
             _context.Users.Update(user);
             await _context.SaveChangesAsync();

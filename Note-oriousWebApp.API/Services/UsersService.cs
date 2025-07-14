@@ -2,7 +2,6 @@
 using Note_oriousWebApp.API.Models;
 using Note_oriousWebApp.API.Repositories;
 using Note_oriousWebApp.API.Helpers;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Note_oriousWebApp.API.Services
 {
@@ -132,7 +131,37 @@ namespace Note_oriousWebApp.API.Services
                 UpdatedAt = updateUser.UpdatedAt,
                 DeletedAt = updateUser.DeletedAt
             };
+        }
 
+        // SOFT-DELETE a user method
+        public async Task<UserResponseDTO> SoftDelete(int id, SoftDeleteUserDTO user)
+        {
+            var isUserExisting = await _usersRepository.GetUserAndAccountByID(id);
+            if (isUserExisting == null)
+            {
+                throw new Exception("User not Found!");
+            }
+
+            isUserExisting.DeletedAt = user.DeletedAt;
+
+            if (isUserExisting.Account != null)
+            {
+                isUserExisting.Account.DeletedAt = user.DeletedAt;
+            }
+
+            var softDeleteuser = await _usersRepository.SoftDelete(id, isUserExisting);
+
+            return new UserResponseDTO
+            {
+                Id = softDeleteuser.Id,
+                Firstname = softDeleteuser.Firstname,
+                Lastname = softDeleteuser.Lastname,
+                Email = softDeleteuser.Email,
+                Role = softDeleteuser.Role,
+                CreatedAt = softDeleteuser.CreatedAt,
+                UpdatedAt = softDeleteuser.UpdatedAt,
+                DeletedAt = softDeleteuser.DeletedAt
+            };
         }
     }
 }
