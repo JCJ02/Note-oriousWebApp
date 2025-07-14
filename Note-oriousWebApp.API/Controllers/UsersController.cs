@@ -52,9 +52,9 @@ namespace Note_oriousWebApp.API.Controllers
                 // Return 201 Created response with user details and a location header
                 return CreatedAtAction(nameof(GetUserByID), new { id = createUser.Id }, createUser);
             }
-            catch (Exception)
+            catch (Exception error)
             {
-                return StatusCode(500, "An Error Occurred!");
+                return StatusCode(500, error.Message);
             }
         }
 
@@ -69,10 +69,9 @@ namespace Note_oriousWebApp.API.Controllers
                     return NotFound("Users not Found!");
                 return Ok(users);
             }
-            catch (Exception)
+            catch (Exception error)
             {
-                // Log the exception (not implemented here)
-                return StatusCode(500, "An Error Occurred!");
+                return StatusCode(500, error.Message);
             }
         }
 
@@ -88,10 +87,9 @@ namespace Note_oriousWebApp.API.Controllers
 
                 return Ok(user);
             }
-            catch (Exception)
+            catch (Exception error)
             {
-                // Log the exception (not implemented here)
-                return StatusCode(500, "An Error Occurred!");
+                return StatusCode(500, error.Message);
             }
         }
 
@@ -122,9 +120,25 @@ namespace Note_oriousWebApp.API.Controllers
                 var updatedUser = await _usersService.Update(id, updateUserDTO);
                 return Ok(updatedUser);
 
-            } catch (Exception)
+            }
+            catch (Exception error)
             {
-                return StatusCode(500, "An Error Occurred!");
+                return StatusCode(500, error.Message);
+            }
+        }
+
+        // SOFT-DELETE /api/users/{id}
+        [HttpDelete("delete/{id}")]
+        public async Task<IActionResult> SoftDelete(int id, [FromBody] SoftDeleteUserDTO softDeleteUserDTO)
+        {
+            try
+            {
+                var softDeletedUser = await _usersService.SoftDelete(id, softDeleteUserDTO);
+                return Ok($"User {id} is now Deleted at {softDeletedUser.DeletedAt}.");
+            }
+            catch (Exception error)
+            {
+                return StatusCode(500, error.Message);
             }
         }
     }
