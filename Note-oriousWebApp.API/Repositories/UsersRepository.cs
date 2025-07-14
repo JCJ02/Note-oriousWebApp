@@ -6,36 +6,63 @@ namespace Note_oriousWebApp.API.Repositories
 {
     public class UsersRepository
     {
-        // Call the AppDBContext to interact with the database
+        // Call AppDBContext
         private readonly AppDBContext _context;
 
-        // Constructor that injects the application's DbContext
+        // Constructor
         public UsersRepository(AppDBContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        // Save a new user and their account to the database
-        public async Task<UsersModel> Create(UsersModel user)
+        // GET exisiting email address method
+        public async Task<bool> IsEmailExisting(string email)
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-            return user;
+            return await _context.Users
+                .AnyAsync(user => user.Email == email && user.DeletedAt == null);
         }
 
-        // Get all users that are not soft-deleted (DeletedAt is null)
+        // CREATE a user + account methond
+        public async Task<UsersModel> Create(UsersModel user)
+        {
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+                    return user;
+                } catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+        }
+
+        // GET all users method
         public async Task<List<UsersModel>> GetAllUsers()
         {
             return await _context.Users
-                .Where(users => users.DeletedAt == null) // Filter out soft-deleted users
-                .ToListAsync(); // Execute the query and return the list
+                .Where(users => users.DeletedAt == null)
+                .ToListAsync();
         }
 
-        // Get a specific user by their ID (only if not soft-deleted)
+        // GET a user method
         public async Task<UsersModel?> GetUserByID(int id)
         {
             return await _context.Users
                 .FirstOrDefaultAsync(users => users.Id == id && users.DeletedAt == null); // Get user if not deleted
+        }
+
+        // UPDATE a user method
+        public async Task<UsersModel> Update(UsersModel user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return user;
         }
     }
 }
