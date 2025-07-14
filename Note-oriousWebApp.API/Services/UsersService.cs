@@ -2,23 +2,32 @@
 using Note_oriousWebApp.API.Models;
 using Note_oriousWebApp.API.Repositories;
 using Note_oriousWebApp.API.Helpers;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Note_oriousWebApp.API.Services
 {
     public class UsersService
     {
-        // The repository responsible for interacting with the database
+        // Call the UsersRepository Class
         private readonly UsersRepository _usersRepository;
 
-        // Inject the repository into the service via constructor
+        // Contructor
         public UsersService(UsersRepository usersRepository)
         {
             _usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
         }
 
-        // Create a new user and their account (password will be hashed)
+        // CREATE a user method
         public async Task<UserResponseDTO> Create(CreateUserDTO createUserDTO)
         {
+            // Check if email already exist
+            bool emailExists = await _usersRepository.IsEmailExisting(createUserDTO.Email);
+            if (emailExists)
+            {
+                throw new Exception("Email Already Exists!");
+            }
+
+
             // Hash the plain text password before saving it
             string hashedPassword = PasswordHelper.HashPassword(createUserDTO.Password);
 
@@ -49,7 +58,7 @@ namespace Note_oriousWebApp.API.Services
             };
         }
 
-        // Retrieve all users (excluding soft-deleted ones)
+        // GET all users method
         public async Task<List<UserResponseDTO>> GetAllUsers()
         {
             var getAllUsers = await _usersRepository.GetAllUsers();
@@ -73,7 +82,7 @@ namespace Note_oriousWebApp.API.Services
             }).ToList();
         }
 
-        // Retrieve a single user by ID (if not soft-deleted)
+        // GET a user method
         public async Task<UserResponseDTO?> GetUserByID(int id)
         {
             var getUser = await _usersRepository.GetUserByID(id);
@@ -95,6 +104,35 @@ namespace Note_oriousWebApp.API.Services
                 UpdatedAt = getUser.UpdatedAt,
                 DeletedAt = getUser.DeletedAt
             }; ;
+        }
+
+        // UPDATE a user method
+        public async Task<UserResponseDTO> Update(int id, UpdateUserDTO user)
+        {
+            var isUserExisting = await _usersRepository.GetUserByID(id);
+            if (isUserExisting == null)
+            {
+                throw new Exception("User not Found!");
+            }
+
+            isUserExisting.Firstname = user.Firstname;
+            isUserExisting.Lastname = user.Lastname;
+            isUserExisting.Email = user.Email;
+
+            var updateUser = await _usersRepository.Update(isUserExisting);
+
+            return new UserResponseDTO
+            {
+                Id = updateUser.Id,
+                Firstname = updateUser.Firstname,
+                Lastname = updateUser.Lastname,
+                Email = updateUser.Email,
+                Role = updateUser.Role,
+                CreatedAt = updateUser.CreatedAt,
+                UpdatedAt = updateUser.UpdatedAt,
+                DeletedAt = updateUser.DeletedAt
+            };
+
         }
     }
 }
