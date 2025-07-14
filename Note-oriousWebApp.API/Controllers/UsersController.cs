@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Note_oriousWebApp.API.DTOs.UsersDTOs;
+using Note_oriousWebApp.API.Helpers;
 using Note_oriousWebApp.API.Services;
 
 namespace Note_oriousWebApp.API.Controllers
@@ -8,15 +9,16 @@ namespace Note_oriousWebApp.API.Controllers
     [Route("api/[controller]")] // This sets the base endpoint to: api/users
     public class UsersController : ControllerBase
     {
-        // Call the UsersService to handle user-related operations
+        // Call the UsersService Class
         private readonly UsersService _usersService;
 
-        // Inject the service into the controller
+        // Constructor
         public UsersController(UsersService usersService)
         {
             _usersService = usersService ?? throw new ArgumentNullException(nameof(usersService));
         }
 
+        // CREATE /api/users
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserDTO createUserDTO)
         {
@@ -35,6 +37,10 @@ namespace Note_oriousWebApp.API.Controllers
                 {
                     return BadRequest("Email is Required!");
                 }
+                else if (!ValidationHelper.IsValidEmail(createUserDTO.Email))
+                {
+                    return BadRequest("Invalid Email Address!");
+                }
                 else if (string.IsNullOrWhiteSpace(createUserDTO.Password))
                 {
                     return BadRequest("Password is Required!");
@@ -52,8 +58,7 @@ namespace Note_oriousWebApp.API.Controllers
             }
         }
 
-        // get /api/users
-        // return all users
+        // GET /api/users
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -71,8 +76,7 @@ namespace Note_oriousWebApp.API.Controllers
             }
         }
 
-        // get /api/users/{id}
-        // return a specific user by id
+        // GET /api/users/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserByID(int id)
         {
@@ -87,6 +91,39 @@ namespace Note_oriousWebApp.API.Controllers
             catch (Exception)
             {
                 // Log the exception (not implemented here)
+                return StatusCode(500, "An Error Occurred!");
+            }
+        }
+
+        // UPDATE /api/users/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDTO updateUserDTO)
+        {
+            try
+            {
+                // Basic input validation for required fields
+                if (string.IsNullOrWhiteSpace(updateUserDTO.Firstname))
+                {
+                    return BadRequest("Firstname is Required!");
+                }
+                else if (string.IsNullOrWhiteSpace(updateUserDTO.Lastname))
+                {
+                    return BadRequest("Lastname is Required!");
+                }
+                else if (string.IsNullOrWhiteSpace(updateUserDTO.Email))
+                {
+                    return BadRequest("Email is Required!");
+                }
+                else if (!ValidationHelper.IsValidEmail(updateUserDTO.Email))
+                {
+                    return BadRequest("Invalid Email Address!");
+                }
+
+                var updatedUser = await _usersService.Update(id, updateUserDTO);
+                return Ok(updatedUser);
+
+            } catch (Exception)
+            {
                 return StatusCode(500, "An Error Occurred!");
             }
         }
