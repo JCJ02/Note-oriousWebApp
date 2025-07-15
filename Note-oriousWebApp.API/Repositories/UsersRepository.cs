@@ -74,7 +74,7 @@ namespace Note_oriousWebApp.API.Repositories
         }
 
         // SOFT-DELETE a user method
-        public async Task<UsersModel> SoftDelete(int id, UsersModel user)
+        public async Task<UsersModel> SoftDelete(UsersModel user)
         {
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
