@@ -5,18 +5,17 @@ using System;
 
 namespace Note_oriousWebApp.API.Repositories
 {
-    // This class is responsible for direct access to the Notes table in the database
     public class NotesRepository
     {
         private readonly AppDBContext _context;
 
-        // Constructor injects the application's DbContext
+        // Constructor
         public NotesRepository(AppDBContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        // Save a new note to the database
+        // CREATE a note method
         public async Task<NotesModel> Create(NotesModel note)
         {
             _context.Notes.Add(note);
@@ -24,19 +23,26 @@ namespace Note_oriousWebApp.API.Repositories
             return note;
         }
 
-        // Get all notes that are not deleted (soft delete filter)
-        public async Task<List<NotesModel>> GetAllNotes()
+        // GET notes method
+        public async Task<List<NotesModel>> GetNotes()
         {
             return await _context.Notes
                 .Where(notes => notes.DeletedAt == null)
                 .ToListAsync();
         }
 
-        // Get a specific note by ID (only if not soft-deleted)
+        // GET a note method
         public async Task<NotesModel?> GetNoteByID(int id)
         { 
             return await _context.Notes
                 .FirstOrDefaultAsync(notes => notes.Id == id && notes.DeletedAt == null);
+        }
+
+        // GET a user method
+        public async Task<UsersModel?> GetUserByID(int id)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(user => user.Id == id && user.DeletedAt == null);
         }
     }
 }

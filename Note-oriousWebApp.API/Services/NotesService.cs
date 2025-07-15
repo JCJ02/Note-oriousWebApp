@@ -1,34 +1,44 @@
-﻿using Note_oriousWebApp.API.Models;
+﻿using Note_oriousWebApp.API.DTOs.Notes;
+using Note_oriousWebApp.API.DTOs.UsersDTOs;
+using Note_oriousWebApp.API.Models;
 using Note_oriousWebApp.API.Repositories;
 
 namespace Note_oriousWebApp.API.Services
 {
-    // This class handles business rules and logic before interacting with the repository
     public class NotesService
     {
+        // Call NotesRepository Class
         private readonly NotesRepository _notesRepository;
 
+        // Contstructor
         public NotesService(NotesRepository notesRepository)
         {
             _notesRepository = notesRepository ?? throw new ArgumentNullException(nameof(notesRepository));
         }
 
-        // Create a new note with business rules (like setting timestamps)
-        public async Task<NotesModel> Create(string title, string content)
+        // CREATE a note method
+        public async Task<NotesModel> Create(int id, CreateNoteDTO createNoteDTO)
         {
+            var isUserExisting = await _notesRepository.GetUserByID(id);
+            if (isUserExisting == null)
+            {
+                throw new Exception("User not Found!");
+            }
+
             var note = new NotesModel
             {
-                Title = title,
-                Content = content,
+                Title = createNoteDTO.Title,
+                Content = createNoteDTO.Content,
+                UserId = id
             };
 
             return await _notesRepository.Create(note);
         }
 
-        // Get all notes (calls repository)
-        public async Task<List<NotesModel>> GetAllNotes()
+        // GET notes method
+        public async Task<List<NotesModel>> GetNotes()
         {
-            var getAllNotes = await _notesRepository.GetAllNotes();
+            var getAllNotes = await _notesRepository.GetNotes();
 
             if (getAllNotes == null || getAllNotes.Count == 0)
             {
