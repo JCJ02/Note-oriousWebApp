@@ -4,27 +4,26 @@ using Note_oriousWebApp.API.Services;
 
 namespace note_oriouswebapp.api.controllers
 {
-    // this controller exposes http endpoints for interacting with notes
+    // Endpoint: api/notes
     [ApiController]
-    [Route("api/[controller]")] // endpoint: api/notes
+    [Route("api/[controller]")]
     public class NotesController : ControllerBase
     {
+        // Call NotesService Class
         private readonly NotesService _notesService;
 
-        // constructor injects the notesservice
+        // Constructor
         public NotesController(NotesService notesService)
         {
             _notesService = notesService ?? throw new ArgumentNullException(nameof(notesService));
         }
 
-        // post /api/notes
-        // create a new note
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateNoteDTO note)
+        // POST /api/notes
+        [HttpPost("{id}")]
+        public async Task<IActionResult> Create(int id, [FromBody] CreateNoteDTO note)
         {
             try
             {
-                // simple validation
                 if (string.IsNullOrWhiteSpace(note.Title))
                 {
                     return BadRequest("Title is Required!");
@@ -34,40 +33,34 @@ namespace note_oriouswebapp.api.controllers
                     return BadRequest("Content is Required!");
                 }
 
-                var create = await _notesService.Create(note.Title, note.Content);
+                var create = await _notesService.Create(id, note);
 
-                // return 201 created with location of the new note
                 return CreatedAtAction(nameof(GetNoteByID), new { id = create.Id }, create);
             }
-            catch (Exception)
+            catch (Exception error)
             {
-                // log the exception (not implemented here)
-                return StatusCode(500, "An Error Occured!");
+                return StatusCode(500, error.Message);
             }
-
         }
 
-        // get /api/notes
-        // return all notes
+        // GET /api/notes
         [HttpGet]
-        public async Task<IActionResult> GetAllNotes()
+        public async Task<IActionResult> GetNotes()
         {
             try
             {
-                var notes = await _notesService.GetAllNotes();
+                var notes = await _notesService.GetNotes();
                 if (notes == null || notes.Count == 0)
                     return NotFound("Notes not Found!");
                 return Ok(notes);
             }
-            catch (Exception)
+            catch (Exception error)
             {
-                // log the exception (not implemented here)
-                return StatusCode(500, "An Error Occured!");
+                return StatusCode(500, error.Message);
             }
         }
 
-        // get /api/notes/{id}
-        // return a specific note by id
+        // GET /api/notes/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetNoteByID(int id)
         {
@@ -79,10 +72,9 @@ namespace note_oriouswebapp.api.controllers
 
                 return Ok(note);
             }
-            catch (Exception)
+            catch (Exception error)
             {
-                // log the exception (not implemented here)
-                return StatusCode(500, "An Error Occured!");
+                return StatusCode(500, error.Message);
             }
         }
 

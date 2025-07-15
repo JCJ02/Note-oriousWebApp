@@ -25,8 +25,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Call Helpers
-string randomString = GenerateRandomStringHelper.GenerateRandomString(16);
-Console.WriteLine($"Generated Random String: {randomString}");
+//string randomString = GenerateRandomStringHelper.GenerateRandomString(16);
+//Console.WriteLine($"Generated Random String: {randomString}");
 
 var app = builder.Build();
 
