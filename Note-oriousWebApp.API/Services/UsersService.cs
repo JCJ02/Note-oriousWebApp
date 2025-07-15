@@ -26,7 +26,6 @@ namespace Note_oriousWebApp.API.Services
                 throw new Exception("Email Already Exists!");
             }
 
-
             // Hash the plain text password before saving it
             string hashedPassword = PasswordHelper.HashPassword(createUserDTO.Password);
 
@@ -117,6 +116,7 @@ namespace Note_oriousWebApp.API.Services
             isUserExisting.Firstname = user.Firstname;
             isUserExisting.Lastname = user.Lastname;
             isUserExisting.Email = user.Email;
+            isUserExisting.UpdatedAt = user.UpdatedAt;
 
             var updateUser = await _usersRepository.Update(isUserExisting);
 
@@ -142,6 +142,7 @@ namespace Note_oriousWebApp.API.Services
                 throw new Exception("User not Found!");
             }
 
+            isUserExisting.UpdatedAt = user.UpdatedAt;
             isUserExisting.DeletedAt = user.DeletedAt;
 
             if (isUserExisting.Account != null)
@@ -149,7 +150,7 @@ namespace Note_oriousWebApp.API.Services
                 isUserExisting.Account.DeletedAt = user.DeletedAt;
             }
 
-            var softDeleteuser = await _usersRepository.SoftDelete(id, isUserExisting);
+            var softDeleteuser = await _usersRepository.SoftDelete(isUserExisting);
 
             return new UserResponseDTO
             {
