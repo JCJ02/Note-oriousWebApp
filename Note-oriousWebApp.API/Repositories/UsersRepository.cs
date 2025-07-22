@@ -15,14 +15,14 @@ namespace Note_oriousWebApp.API.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        // GET exisiting email address method
+        // GET Exisiting Email Method
         public async Task<bool> IsEmailExisting(string email)
         {
             return await _context.Users
                 .AnyAsync(user => user.Email == email && user.DeletedAt == null);
         }
 
-        // CREATE a user + account methond
+        // CREATE a User and Acount Method
         public async Task<UsersModel> Create(UsersModel user)
         {
             using (var transaction = await _context.Database.BeginTransactionAsync())
@@ -42,7 +42,7 @@ namespace Note_oriousWebApp.API.Repositories
             }
         }
 
-        // GET all users method
+        // GET All Users Method
         public async Task<List<UsersModel>> GetAllUsers()
         {
             return await _context.Users
@@ -50,22 +50,25 @@ namespace Note_oriousWebApp.API.Repositories
                 .ToListAsync();
         }
 
-        // GET a user method
+        // GET a User Method
         public async Task<UsersModel?> GetUserByID(int id)
         {
             return await _context.Users
-                .FirstOrDefaultAsync(user => user.Id == id && user.DeletedAt == null);
+                .Where(user => user.Id == id && user.DeletedAt == null)
+                .FirstOrDefaultAsync();
         }
 
-        // GET the user and account method
+        // GET the User, Account and Note Method
         public async Task<UsersModel?> GetUserAndAccountByID(int id)
         {
             return await _context.Users
+                .Where(user => user.Id == id && user.DeletedAt == null)
                 .Include(user => user.Account)
-                .FirstOrDefaultAsync(user => user.Id == id && user.DeletedAt == null);
+                .Include(user => user.Notes)
+                .FirstOrDefaultAsync();
         }
 
-        // UPDATE a user method
+        // UPDATE a User Method
         public async Task<UsersModel> Update(UsersModel user)
         {
             _context.Users.Update(user);
@@ -73,12 +76,21 @@ namespace Note_oriousWebApp.API.Repositories
             return user;
         }
 
-        // SOFT-DELETE a user method
+        // SOFT-DELETE a User method
         public async Task<UsersModel> SoftDelete(UsersModel user)
         {
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
             return user;
         }
+
+        // AUTHENTICATION/LOGIN User Method
+        //public async Task<UsersModel?> Auth(string email)
+        //{
+        //    return await _context.Users
+        //        .Where(user => user.Email == email && user.DeletedAt == null)
+        //        .Include(user => user.Account)
+        //        .FirstOrDefaultAsync();
+        //}
     }
 }
