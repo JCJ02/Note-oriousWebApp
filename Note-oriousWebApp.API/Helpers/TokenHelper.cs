@@ -74,7 +74,7 @@ namespace Note_oriousWebApp.API.Helpers
             return ValidateToken(token, _refreshKey, isRefresh: true);
         }
 
-        private ClaimsPrincipal ValidateToken(string token, byte[] key, bool isRefresh)
+        public ClaimsPrincipal ValidateToken(string token, byte[] key, bool isRefresh)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             try
