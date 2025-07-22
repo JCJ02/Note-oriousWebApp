@@ -6,9 +6,14 @@ using Note_oriousWebApp.API.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add Services to the Container.
+// Auth
+builder.Services.AddScoped<AuthRepository>();
+builder.Services.AddScoped<AuthService>();
+// Notes
 builder.Services.AddScoped<NotesRepository>();
 builder.Services.AddScoped<NotesService>();
+// Users
 builder.Services.AddScoped<UsersRepository>();
 builder.Services.AddScoped<UsersService>();
 
