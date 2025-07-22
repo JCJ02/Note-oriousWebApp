@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Note_oriousWebApp.API.DTOs.UsersDTOs;
 using Note_oriousWebApp.API.Helpers;
 using Note_oriousWebApp.API.Services;
@@ -20,6 +21,7 @@ namespace Note_oriousWebApp.API.Controllers
 
         // CREATE a User Method
         // POST /api/Users
+        //[AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserDTO createUserDTO)
         {
@@ -61,6 +63,7 @@ namespace Note_oriousWebApp.API.Controllers
 
         // GET All Users Method
         // GET /api/Users
+        //[Authorize(Roles = "User")]
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -79,6 +82,7 @@ namespace Note_oriousWebApp.API.Controllers
 
         /// GET a User Method
         // GET /api/Users/{id}
+        //[Authorize(Roles = "User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserByID(int id)
         {
@@ -98,6 +102,7 @@ namespace Note_oriousWebApp.API.Controllers
 
         // UPDATE a User Method
         // PUT /api/Users/{id}
+        //[Authorize(Roles = "User")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDTO updateUserDTO)
         {
@@ -133,6 +138,7 @@ namespace Note_oriousWebApp.API.Controllers
 
         // SOFT-DELETE a User Method
         // DELETE /api/Users/{id}
+        //[Authorize(Roles = "User")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> SoftDelete(int id, [FromBody] SoftDeleteUserDTO softDeleteUserDTO)
         {
