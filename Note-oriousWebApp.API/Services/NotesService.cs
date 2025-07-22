@@ -1,4 +1,5 @@
 ﻿using Note_oriousWebApp.API.DTOs.Notes;
+using Note_oriousWebApp.API.DTOs.NotesDTOs;
 using Note_oriousWebApp.API.DTOs.UsersDTOs;
 using Note_oriousWebApp.API.Models;
 using Note_oriousWebApp.API.Repositories;
@@ -16,7 +17,7 @@ namespace Note_oriousWebApp.API.Services
             _notesRepository = notesRepository ?? throw new ArgumentNullException(nameof(notesRepository));
         }
 
-        // CREATE a note method
+        // CREATE a Note Method
         public async Task<NotesModel> Create(int id, CreateNoteDTO createNoteDTO)
         {
             var isUserExisting = await _notesRepository.GetUserByID(id);
@@ -35,7 +36,7 @@ namespace Note_oriousWebApp.API.Services
             return await _notesRepository.Create(note);
         }
 
-        // GET notes method
+        // GET Notes Method
         public async Task<List<NotesModel>> GetNotes()
         {
             var getAllNotes = await _notesRepository.GetNotes();
@@ -48,7 +49,7 @@ namespace Note_oriousWebApp.API.Services
             return getAllNotes;
         }
 
-        // Get a single note by ID (calls repository)
+        // GET a Note Method
         public async Task<NotesModel?> GetNoteByID(int id)
         {
             var getNote = await _notesRepository.GetNoteByID(id);
@@ -60,5 +61,60 @@ namespace Note_oriousWebApp.API.Services
 
             return getNote;
         }
+
+        // UPDATE a Note Method
+        public async Task<NoteResponseDTO> Update(int id, UpdateNoteDTO updatedNoteDTO)
+        {
+            var isNoteExisting = await _notesRepository.GetNoteByID(id);
+            if(isNoteExisting == null)
+            {
+                throw new Exception("Note not Found!");
+            }
+
+            isNoteExisting.Title = updatedNoteDTO.Title;
+            isNoteExisting.Content = updatedNoteDTO.Content;
+            isNoteExisting.UpdatedAt = updatedNoteDTO.UpdatedAt;
+
+            var updatedNote = await _notesRepository.Update(isNoteExisting);
+
+            return new NoteResponseDTO
+            {
+                Id = updatedNote.Id,
+                Title = updatedNote.Title,
+                Content = updatedNote.Content,
+                CreatedAt = updatedNote.CreatedAt,
+                UpdatedAt = updatedNote.UpdatedAt,
+                DeletedAt = updatedNote.DeletedAt,
+                UserID = updatedNote.UserId
+            };
+
+        }
+
+        // SOFT-DELETE a Note Method
+        public async Task<NoteResponseDTO> SoftDelete(int id, SoftDeleteNoteDTO softDeleteNoteDTO)
+        {
+            var isNoteExisting = await _notesRepository.GetNoteByID(id);
+            if(isNoteExisting == null)
+            {
+                throw new Exception("Note not Found!");
+            }
+
+            isNoteExisting.UpdatedAt = softDeleteNoteDTO.UpdatedAt;
+            isNoteExisting.DeletedAt = softDeleteNoteDTO.DeletedAt;
+
+            var softDeletedNote = await _notesRepository.SoftDelete(isNoteExisting);
+
+            return new NoteResponseDTO
+            {
+                Id = softDeletedNote.Id,
+                Title = softDeletedNote.Title,
+                Content = softDeletedNote.Content,
+                CreatedAt = softDeletedNote.CreatedAt,
+                UpdatedAt = softDeletedNote.UpdatedAt,
+                DeletedAt = softDeletedNote.DeletedAt,
+                UserID = softDeletedNote.UserId
+            };
+        }
+
     }
 }
