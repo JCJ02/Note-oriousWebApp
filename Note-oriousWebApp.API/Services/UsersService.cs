@@ -9,24 +9,26 @@ namespace Note_oriousWebApp.API.Services
     {
         // Call the UsersRepository Class
         private readonly UsersRepository _usersRepository;
+        private readonly TokenHelper _tokenHelper;
 
         // Contructor
-        public UsersService(UsersRepository usersRepository)
+        public UsersService(UsersRepository usersRepository, TokenHelper tokenHelper)
         {
             _usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
+            _tokenHelper = tokenHelper;
         }
 
-        // CREATE a user method
+        // CREATE a User Method
         public async Task<UserResponseDTO> Create(CreateUserDTO createUserDTO)
         {
-            // Check if email already exist
+            // Check if Email already exist
             bool emailExists = await _usersRepository.IsEmailExisting(createUserDTO.Email);
             if (emailExists)
             {
                 throw new Exception("Email Already Exists!");
             }
 
-            // Hash the plain text password before saving it
+            // Hash the plain text Password before saving it
             string hashedPassword = PasswordHelper.HashPassword(createUserDTO.Password);
 
             // Map the DTO to the UsersModel and associated AccountsModel
@@ -56,12 +58,12 @@ namespace Note_oriousWebApp.API.Services
             };
         }
 
-        // GET all users method
+        // GET all Users Method
         public async Task<List<UserResponseDTO>> GetAllUsers()
         {
             var getAllUsers = await _usersRepository.GetAllUsers();
 
-            // If no users found, throw an exception
+            // If no Users found, throw an exception
             if (getAllUsers == null || getAllUsers.Count == 0)
             {
                 throw new Exception("Users not Found!");
@@ -80,12 +82,12 @@ namespace Note_oriousWebApp.API.Services
             }).ToList();
         }
 
-        // GET a user method
+        // GET a User Method
         public async Task<UserResponseDTO?> GetUserByID(int id)
         {
             var getUser = await _usersRepository.GetUserByID(id);
 
-            // Throw exception if user not found
+            // Throw exception if User not found
             if (getUser == null)
             {
                 throw new Exception($"User not Found with ID: {id}");
@@ -104,8 +106,8 @@ namespace Note_oriousWebApp.API.Services
             }; ;
         }
 
-        // UPDATE a user method
-        public async Task<UserResponseDTO> Update(int id, UpdateUserDTO user)
+        // UPDATE a User Method
+        public async Task<UserResponseDTO> Update(int id, UpdateUserDTO updateUserDTO)
         {
             var isUserExisting = await _usersRepository.GetUserByID(id);
             if (isUserExisting == null)
@@ -113,10 +115,10 @@ namespace Note_oriousWebApp.API.Services
                 throw new Exception("User not Found!");
             }
 
-            isUserExisting.Firstname = user.Firstname;
-            isUserExisting.Lastname = user.Lastname;
-            isUserExisting.Email = user.Email;
-            isUserExisting.UpdatedAt = user.UpdatedAt;
+            isUserExisting.Firstname = updateUserDTO.Firstname;
+            isUserExisting.Lastname = updateUserDTO.Lastname;
+            isUserExisting.Email = updateUserDTO.Email;
+            isUserExisting.UpdatedAt = updateUserDTO.UpdatedAt;
 
             var updateUser = await _usersRepository.Update(isUserExisting);
 
@@ -133,8 +135,8 @@ namespace Note_oriousWebApp.API.Services
             };
         }
 
-        // SOFT-DELETE a user method
-        public async Task<UserResponseDTO> SoftDelete(int id, SoftDeleteUserDTO user)
+        // SOFT-DELETE a User Method
+        public async Task<UserResponseDTO> SoftDelete(int id, SoftDeleteUserDTO softDeleteUserDTO)
         {
             var isUserExisting = await _usersRepository.GetUserAndAccountByID(id);
             if (isUserExisting == null)
@@ -142,12 +144,22 @@ namespace Note_oriousWebApp.API.Services
                 throw new Exception("User not Found!");
             }
 
-            isUserExisting.UpdatedAt = user.UpdatedAt;
-            isUserExisting.DeletedAt = user.DeletedAt;
+            isUserExisting.UpdatedAt = softDeleteUserDTO.UpdatedAt;
+            isUserExisting.DeletedAt = softDeleteUserDTO.DeletedAt;
 
             if (isUserExisting.Account != null)
             {
-                isUserExisting.Account.DeletedAt = user.DeletedAt;
+                isUserExisting.Account.DeletedAt = softDeleteUserDTO.DeletedAt;
+            }
+
+            // Soft-Delete All Notes of the Selected User
+            if(isUserExisting.Notes != null && isUserExisting.Notes.Any())
+            {
+                foreach (var note in isUserExisting.Notes)
+                {
+                    note.DeletedAt = softDeleteUserDTO.DeletedAt;
+                    note.UpdatedAt = softDeleteUserDTO.UpdatedAt;
+                }
             }
 
             var softDeleteuser = await _usersRepository.SoftDelete(isUserExisting);
@@ -164,5 +176,35 @@ namespace Note_oriousWebApp.API.Services
                 DeletedAt = softDeleteuser.DeletedAt
             };
         }
+
+        // AUTHENTICATE/LOGIN a User Method
+        //public async Task<UserAuthResponseDTO> Auth(string email, string password)
+        //{
+        //    var user = await _usersRepository.Auth(email);
+        //    if (user == null)
+        //        return null;
+
+        //    var isPasswordValid = PasswordHelper.VerifyPassword(password, user.Account.Password);
+        //    if (!isPasswordValid)
+        //        return null;
+
+        //    var payload = new Dictionary<string, string>
+        //    {
+        //        { "id", user.Id.ToString() },
+        //        { "email", user.Email }
+        //    };
+
+        //    var accessToken = _tokenHelper.GenerateAccessToken(payload);
+        //    var refreshToken = _tokenHelper.GenerateRefreshToken(payload);
+
+        //    return new UserAuthResponseDTO
+        //    {
+        //        Id = user.Id,
+        //        Email = user.Email,
+        //        AccessToken = accessToken,
+        //        RefreshToken = refreshToken
+        //    };
+        //}
+
     }
 }
