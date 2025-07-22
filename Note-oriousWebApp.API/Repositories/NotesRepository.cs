@@ -15,7 +15,7 @@ namespace Note_oriousWebApp.API.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        // CREATE a note method
+        // CREATE a Note Method
         public async Task<NotesModel> Create(NotesModel note)
         {
             _context.Notes.Add(note);
@@ -23,7 +23,7 @@ namespace Note_oriousWebApp.API.Repositories
             return note;
         }
 
-        // GET notes method
+        // GET Notes Method
         public async Task<List<NotesModel>> GetNotes()
         {
             return await _context.Notes
@@ -31,18 +31,37 @@ namespace Note_oriousWebApp.API.Repositories
                 .ToListAsync();
         }
 
-        // GET a note method
+        // GET a Note Method
         public async Task<NotesModel?> GetNoteByID(int id)
         { 
             return await _context.Notes
-                .FirstOrDefaultAsync(notes => notes.Id == id && notes.DeletedAt == null);
+                .Where(notes => notes.Id == id && notes.DeletedAt == null)
+                .FirstOrDefaultAsync();
         }
 
-        // GET a user method
+        // GET a User Method
         public async Task<UsersModel?> GetUserByID(int id)
         {
             return await _context.Users
-                .FirstOrDefaultAsync(user => user.Id == id && user.DeletedAt == null);
+                .Where(user => user.Id == id && user.DeletedAt == null)
+                .FirstOrDefaultAsync();
         }
+
+        // UPDATE a Note Method
+        public async Task<NotesModel> Update(NotesModel notes)
+        {
+            _context.Notes.Update(notes);
+            await _context.SaveChangesAsync();
+            return notes;
+        }
+
+        // SOFT-DELETE a Note Method
+        public async Task<NotesModel> SoftDelete(NotesModel notes)
+        {
+            _context.Notes.Update(notes);
+            await _context.SaveChangesAsync();
+            return notes;
+        }
+
     }
 }
