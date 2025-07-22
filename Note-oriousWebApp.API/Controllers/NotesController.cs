@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Note_oriousWebApp.API.DTOs.Notes;
 using Note_oriousWebApp.API.DTOs.NotesDTOs;
 using Note_oriousWebApp.API.DTOs.UsersDTOs;
@@ -23,6 +24,7 @@ namespace note_oriouswebapp.api.controllers
 
         // CREATE a Note Method
         // POST /api/Notes
+        //[Authorize(Roles = "User")]
         [HttpPost("{id}")]
         public async Task<IActionResult> Create(int id, [FromBody] CreateNoteDTO createNoteDTO)
         {
@@ -49,6 +51,7 @@ namespace note_oriouswebapp.api.controllers
 
         // GET Notes Method
         // GET /api/Notes
+        //[Authorize(Roles = "User")]
         [HttpGet]
         public async Task<IActionResult> GetNotes()
         {
@@ -67,6 +70,7 @@ namespace note_oriouswebapp.api.controllers
 
         // GET a Note Method
         // GET /api/Notes/{id}
+        //[Authorize(Roles = "User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetNoteByID(int id)
         {
@@ -86,6 +90,7 @@ namespace note_oriouswebapp.api.controllers
 
         // UPDATE a Note Method
         // PUT /api/Notes/{id}
+        //[Authorize(Roles = "User")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateNoteDTO updateNoteDTO)
         {
@@ -113,6 +118,7 @@ namespace note_oriouswebapp.api.controllers
 
         // SOFT-DELETE a Note Method
         // DELETE /api/Notes/{id}
+        //[Authorize(Roles = "User")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> SoftDelete(int id, [FromBody] SoftDeleteNoteDTO softDeleteNoteDTO)
         {

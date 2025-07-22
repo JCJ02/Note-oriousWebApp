@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Note_oriousWebApp.API.DTOs.UsersDTOs;
 using Note_oriousWebApp.API.Helpers;
 using Note_oriousWebApp.API.Services;
@@ -20,6 +21,7 @@ namespace Note_oriousWebApp.API.Controllers
 
         // LOGIN a User Method
         // POST /api/Auth/
+        //[AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Auth([FromBody] UserAuthDTO userAuthDTO)
         {
