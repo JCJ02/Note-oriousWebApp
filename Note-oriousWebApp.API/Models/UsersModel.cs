@@ -11,6 +11,6 @@
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? DeletedAt { get; set; }
         public AccountsModel Account { get; set; } = null!;
-        public NotesModel Notes { get; set; } = null;
+        public ICollection<NotesModel> Notes { get; set; } = new List<NotesModel>();
     }
 }
