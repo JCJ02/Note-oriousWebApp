@@ -1,6 +1,7 @@
 ﻿using Note_oriousWebApp.API.DTOs.UsersDTOs;
 using Note_oriousWebApp.API.Helpers;
 using Note_oriousWebApp.API.Repositories;
+using System.Security.Claims;
 
 namespace Note_oriousWebApp.API.Services
 {
@@ -31,7 +32,8 @@ namespace Note_oriousWebApp.API.Services
             var payload = new Dictionary<string, string>
             {
                 { "id", user.Id.ToString() },
-                { "email", user.Email }
+                { "email", user.Email },
+                { ClaimTypes.Role, user.Role }
             };
 
             var accessToken = _tokenHelper.GenerateAccessToken(payload);
