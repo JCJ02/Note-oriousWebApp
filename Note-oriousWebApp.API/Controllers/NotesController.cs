@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Note_oriousWebApp.API.DTOs.Notes;
 using Note_oriousWebApp.API.DTOs.NotesDTOs;
-using Note_oriousWebApp.API.DTOs.UsersDTOs;
-using Note_oriousWebApp.API.Helpers;
 using Note_oriousWebApp.API.Services;
 
 namespace note_oriouswebapp.api.controllers
@@ -24,9 +21,8 @@ namespace note_oriouswebapp.api.controllers
 
         // CREATE a Note Method
         // POST /api/Notes
-        //[Authorize(Roles = "User")]
-        [HttpPost("{id}")]
-        public async Task<IActionResult> Create(int id, [FromBody] CreateNoteDTO createNoteDTO)
+        [HttpPost("{userId}")]
+        public async Task<ActionResult> Create(int userId, [FromBody] CreateNoteDTO createNoteDTO)
         {
             try
             {
@@ -39,9 +35,9 @@ namespace note_oriouswebapp.api.controllers
                     return BadRequest("Content is Required!");
                 }
 
-                var create = await _notesService.Create(id, createNoteDTO);
+                var create = await _notesService.Create(userId, createNoteDTO);
 
-                return CreatedAtAction(nameof(GetNoteByID), new { id = create.Id }, create);
+                return Ok(create);
             }
             catch (Exception error)
             {
@@ -51,15 +47,30 @@ namespace note_oriouswebapp.api.controllers
 
         // GET Notes Method
         // GET /api/Notes
-        //[Authorize(Roles = "User")]
-        [HttpGet]
-        public async Task<IActionResult> GetNotes()
+        [HttpGet("list/{userId}")]
+        public async Task<IActionResult> GetNotes(int userId)
         {
             try
             {
-                var notes = await _notesService.GetNotes();
-                if (notes == null || notes.Count == 0)
-                    return NotFound("Notes not Found!");
+                var notes = await _notesService.GetNotes(userId);
+                return Ok(notes);
+            }
+            catch (Exception error)
+            {
+                return StatusCode(500, error.Message);
+            }
+        }
+
+        // GET Archive Notes Method
+        // GET /api/Notes
+        [HttpGet("archive-list/{userId}")]
+        public async Task<IActionResult> GetArchiveNotes(int userId)
+        {
+            try
+            {
+                var notes = await _notesService.GetArchiveNotes(userId);
+                if (notes == null)
+                    return Ok(new { message = "No Archive Notes.", data = new List<object>() });
                 return Ok(notes);
             }
             catch (Exception error)
@@ -70,7 +81,6 @@ namespace note_oriouswebapp.api.controllers
 
         // GET a Note Method
         // GET /api/Notes/{id}
-        //[Authorize(Roles = "User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetNoteByID(int id)
         {
@@ -90,7 +100,6 @@ namespace note_oriouswebapp.api.controllers
 
         // UPDATE a Note Method
         // PUT /api/Notes/{id}
-        //[Authorize(Roles = "User")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateNoteDTO updateNoteDTO)
         {
@@ -117,15 +126,65 @@ namespace note_oriouswebapp.api.controllers
         }
 
         // SOFT-DELETE a Note Method
-        // DELETE /api/Notes/{id}
-        //[Authorize(Roles = "User")]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> SoftDelete(int id, [FromBody] SoftDeleteNoteDTO softDeleteNoteDTO)
+        // DELETE /api/Notes/soft-delete/{id}
+        [HttpDelete("soft-delete/{id}")]
+        public async Task<IActionResult> SoftDelete(int id)
         {
             try
             {
-                var softDeletedUser = await _notesService.SoftDelete(id, softDeleteNoteDTO);
-                return Ok($"Note {id} is now Deleted at {softDeletedUser.DeletedAt}.");
+                var softDeleteNote = await _notesService.SoftDelete(id);
+                return Ok($"Note {id} is now Deleted at {softDeleteNote.DeletedAt}.");
+            }
+            catch (Exception error)
+            {
+                return StatusCode(500, error.Message);
+            }
+        }
+
+        // DELETE a Note Method
+        // DELETE /api/Notes/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var noteDeleted = await _notesService.Delete(id);
+                if (!noteDeleted)
+                    return NotFound("Note not Found!");
+
+                return Ok(new { message = "Note Deleted Permanently!" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        // GET Soft-Deleted Notes Method
+        // GET /api/Notes/soft-deleted-list/{userId}
+        [HttpGet("soft-deleted-list/{userId}")]
+        public async Task<IActionResult> GetSoftDeletedNotes(int userId)
+        {
+            try
+            {
+                var softDeletedNotes = await _notesService.GetSoftDeletedNotes(userId);
+                return Ok(softDeletedNotes);
+            }
+            catch (Exception error)
+            {
+                return StatusCode(500, error.Message);
+            }
+        }
+
+        // ARCHIVE a Note Method
+        // PUT /api/Notes/{id}
+        [HttpPut("archive/{id}")]
+        public async Task<IActionResult> ArchiveNote(int id, [FromBody] ArchiveNoteDTO archiveNoteDTO)
+        {
+            try
+            {
+                var archiveNote = await _notesService.ArchiveNote(id, archiveNoteDTO);
+                return Ok($"Note with {id} has Archive Status: {archiveNote.IsArchive}.");
             }
             catch (Exception error)
             {

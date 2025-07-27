@@ -1,4 +1,3 @@
-﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Note_oriousWebApp.API.DTOs.UsersDTOs;
 using Note_oriousWebApp.API.Helpers;
@@ -21,7 +20,6 @@ namespace Note_oriousWebApp.API.Controllers
 
         // CREATE a User Method
         // POST /api/Users
-        //[AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateUserDTO createUserDTO)
         {
@@ -30,15 +28,15 @@ namespace Note_oriousWebApp.API.Controllers
                 // Basic input validation for required fields
                 if (string.IsNullOrWhiteSpace(createUserDTO.Firstname))
                 {
-                    return BadRequest(new { message = "Firstname is Required." });
+                    return BadRequest(new { message = "Firstname is Required!" });
                 }
                 else if (string.IsNullOrWhiteSpace(createUserDTO.Lastname))
                 {
-                    return BadRequest(new { message = "Lastname is Required." });
+                    return BadRequest(new { message = "Lastname is Required!" });
                 }
                 else if (string.IsNullOrWhiteSpace(createUserDTO.Email))
                 {
-                    return BadRequest(new { message = "Email is Required." });
+                    return BadRequest(new { message = "Email is Required!" });
                 }
                 else if (!ValidationHelper.IsValidEmail(createUserDTO.Email))
                 {
@@ -46,14 +44,40 @@ namespace Note_oriousWebApp.API.Controllers
                 }
                 else if (string.IsNullOrWhiteSpace(createUserDTO.Password))
                 {
-                    return BadRequest(new { message = "Password is Required." });
+                    return BadRequest(new { message = "Password is Required!" });
+                }
+                else if (string.IsNullOrWhiteSpace(createUserDTO.ConfirmPassword))
+                {
+                    return BadRequest(new { message = "Confirm Password is Required!" });
+                }
+
+                if (createUserDTO.Password != createUserDTO.ConfirmPassword)
+                {
+                    return BadRequest(new { message = "Password and Confirm Password do not match!" });
+                }
+
+                var password = createUserDTO.Password;
+                if (password.Length < 8)
+                {
+                    return BadRequest(new { message = "Password must be at least 8 Characters Long." });
+                }
+                if (!password.Any(char.IsUpper))
+                {
+                    return BadRequest(new { message = "Password must contain at least one Uppercase Letter." });
+                }
+                if (!password.Any(char.IsDigit))
+                {
+                    return BadRequest(new { message = "Password must contain at least One Number." });
+                }
+                if (!password.Any(ch => !char.IsLetterOrDigit(ch)))
+                {
+                    return BadRequest(new { message = "Password must contain at least One Special Character." });
                 }
 
                 // Call the Service to Create the User
                 var createUser = await _usersService.Create(createUserDTO);
 
-                // Return 201 Created Response with User Details and a Location Header
-                return CreatedAtAction(nameof(GetUserByID), new { id = createUser.Id }, createUser);
+                return Ok(createUser);
             }
             catch (Exception error)
             {
@@ -63,7 +87,6 @@ namespace Note_oriousWebApp.API.Controllers
 
         // GET All Users Method
         // GET /api/Users
-        //[Authorize(Roles = "User")]
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -82,7 +105,6 @@ namespace Note_oriousWebApp.API.Controllers
 
         /// GET a User Method
         // GET /api/Users/{id}
-        //[Authorize(Roles = "User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserByID(int id)
         {
@@ -102,7 +124,6 @@ namespace Note_oriousWebApp.API.Controllers
 
         // UPDATE a User Method
         // PUT /api/Users/{id}
-        //[Authorize(Roles = "User")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDTO updateUserDTO)
         {
@@ -138,8 +159,7 @@ namespace Note_oriousWebApp.API.Controllers
 
         // SOFT-DELETE a User Method
         // DELETE /api/Users/{id}
-        //[Authorize(Roles = "User")]
-        [HttpDelete("{id}")]
+        [HttpDelete("soft-delete/{id}")]
         public async Task<IActionResult> SoftDelete(int id, [FromBody] SoftDeleteUserDTO softDeleteUserDTO)
         {
             try
@@ -152,41 +172,6 @@ namespace Note_oriousWebApp.API.Controllers
                 return StatusCode(500, error.Message);
             }
         }
-
-        // AUTHENTICATE/LOGIN a User Method
-        // POST /api/Users/
-        //[HttpPost("Auth")]
-        //public async Task<IActionResult> Auth([FromBody] UserAuthDTO userAuthDTO)
-        //{
-        //    try
-        //    {
-        //        if (string.IsNullOrWhiteSpace(userAuthDTO.Email))
-        //        {
-        //            return BadRequest(new { message = "Email is Required!" });
-        //        }
-        //        else if (!ValidationHelper.IsValidEmail(userAuthDTO.Email))
-        //        {
-        //            return BadRequest(new { message = "Invalid Email Address!" });
-        //        }
-        //        else if (string.IsNullOrWhiteSpace(userAuthDTO.Password))
-        //        {
-        //            return BadRequest(new { message = "Password is Required!" });
-        //        }
-
-        //        var authenticatedUser = await _usersService.Auth(userAuthDTO.Email, userAuthDTO.Password);
-
-        //        // Failed
-        //        if (authenticatedUser == null)
-        //            return Unauthorized(new { message = "Invalid Email or Password." });
-
-        //        // Success
-        //        return Ok(authenticatedUser);
-        //    }
-        //    catch (Exception error)
-        //    {
-        //        return StatusCode(500, error.Message);
-        //    }
-        //}
 
     }
 }

@@ -1,4 +1,3 @@
-﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Note_oriousWebApp.API.DTOs.UsersDTOs;
 using Note_oriousWebApp.API.Helpers;
@@ -24,7 +23,6 @@ namespace Note_oriousWebApp.API.Controllers
 
         // LOGIN a User Method
         // POST /api/Auth/
-        //[AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Auth([FromBody] UserAuthDTO userAuthDTO)
         {
@@ -49,22 +47,26 @@ namespace Note_oriousWebApp.API.Controllers
                 if (authenticatedUser == null)
                     return Unauthorized(new { message = "Invalid Email or Password." });
 
+                // Set Cookies
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTime.Now.AddDays(7)
+                    SameSite = SameSiteMode.None,
+                    Expires = DateTime.UtcNow.AddMinutes(15),
+                    Path = "/",
+                    Domain = "localhost" 
                 };
 
-                Response.Cookies.Append("refreshToken", authenticatedUser.RefreshToken, cookieOptions);
+                Response.Cookies.Append("accessToken", authenticatedUser.AccessToken, cookieOptions);
 
                 // Success
                 return Ok(new
                 {
                     id = authenticatedUser.Id,
                     email = authenticatedUser.Email,
-                    accessToken = authenticatedUser.AccessToken
+                    accessToken = authenticatedUser.AccessToken,
+                    refreshToken = authenticatedUser.RefreshToken
                 });
             }
             catch (Exception error)
@@ -73,37 +75,123 @@ namespace Note_oriousWebApp.API.Controllers
             }
         }
 
-        //public async Task<IActionResult> accessToken()
-        //{
-        //    try
-        //    {
-        //        var authHeader = Request.Headers["Authorization"].FirstOrDefault();
-        //        if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
-        //            return Unauthorized(new { messeage = "Missing or Invalid Authorization Header!" });
+        // LOGOUT a User Method
+        // POST /api/Auth/logout
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            try
+            {
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
+                    Expires = DateTime.UtcNow.AddDays(-1),
+                    Path = "/",
+                };
 
-        //        var token = authHeader.Substring("Bearer ".Length).Trim();
+                Response.Cookies.Append("accessToken", "", cookieOptions);
+                Response.Cookies.Delete("accessToken", cookieOptions);
 
-        //        // Validate Token
-        //        var claimsPrincipal = _tokenHelper.ValidateToken(token);
-        //        if (claimsPrincipal == null)
-        //            return Unauthorized(new { message = "Invalid Token" });
+                return Ok(new { message = "Logged Out Successfully!" });
+            }
+            catch (Exception error)
+            {
+                return StatusCode(500, error.Message);
+            }
+        }
 
-        //        var id = claimsPrincipal.FindFirst("id")?.Value;
-        //        var email = claimsPrincipal.FindFirst("email")?.Value;
-        //        var role = claimsPrincipal.FindFirst(ClaimTypes.Role)?.Value;
+        [HttpGet("validate-access-token")]
+        public IActionResult ValidateAccessToken()
+        {
+            try
+            {
 
-        //        return Ok(new
-        //        {
-        //            id = id,
-        //            email = email,
-        //            role = role
-        //        });
-        //    }
-        //    catch (Exception error)
-        //    {
-        //        return StatusCode(500, error.Message);
-        //    }
-        //}
+                string? accessToken = null;
+
+                var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+                if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+                {
+                    accessToken = authHeader.Substring("Bearer ".Length).Trim();
+                }
+
+                if (string.IsNullOrEmpty(accessToken))
+                {
+                    accessToken = Request.Cookies["accessToken"];
+                }
+
+                if (string.IsNullOrEmpty(accessToken))
+                {
+                    return Unauthorized(new { valid = false, message = "Missing Token!" });
+                }
+
+                var claimsPrincipal = _tokenHelper.VerifyAccessToken(accessToken);
+
+                if (claimsPrincipal == null)
+                {
+                    return Unauthorized(new { valid = false, message = "Invalid Token!" });
+                }
+
+                var id = claimsPrincipal.FindFirst("id")?.Value;
+                var email = claimsPrincipal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                var role = claimsPrincipal.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+                return Ok(new
+                {
+                    valid = true,
+                    tokenType = "accessToken",
+                    id,
+                    email,
+                    role
+                });
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { valid = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet("validate-refresh-token")]
+        public IActionResult ValidateRefreshToken()
+        {
+            try
+            {
+                // Read Refresh Token From Cookie
+                var refreshToken = Request.Cookies["refreshToken"];
+
+                if (string.IsNullOrEmpty(refreshToken))
+                {
+                    return Unauthorized(new { valid = false, message = "No Refresh Token Cookie Found." });
+                }
+
+                var claimsPrincipal = _tokenHelper.VerifyRefreshToken(refreshToken);
+
+                if (claimsPrincipal == null)
+                {
+                    return Unauthorized(new { valid = false, message = "Invalid or Expired Refresh Token." });
+                }
+
+                // extract claims
+                var id = claimsPrincipal.FindFirst("id")?.Value;
+                var email = claimsPrincipal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                var role = claimsPrincipal.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+                return Ok(new
+                {
+                    valid = true,
+                    tokenType = "refreshToken",
+                    id,
+                    email,
+                    role
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { valid = false, message = ex.Message });
+            }
+        }
 
     }
 }
