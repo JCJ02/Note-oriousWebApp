@@ -25,8 +25,8 @@ builder.Services.AddScoped<UsersService>();
 builder.Services.AddDbContext<AppDBContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Register JWTSettings and TokenHelper
-builder.Services.Configure<JWTSettings>(builder.Configuration.GetSection("JwtSettings"));
-var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JWTSettings>();
+builder.Services.Configure<JWTSettings>(builder.Configuration.GetSection("JWTSettings"));
+var jwtSettings = builder.Configuration.GetSection("JWTSettings").Get<JWTSettings>();
 builder.Services.AddSingleton<TokenHelper>();
 
 builder.Services.AddAuthentication(options =>
@@ -79,14 +79,6 @@ builder.Services.AddSwaggerGen(configure =>
 });
 
 
-// Add Authorization
-builder.Services.AddAuthorization(options =>
-{
-    // Optional: define named policies
-    options.AddPolicy("AdminOnly", policy =>
-        policy.RequireRole("Admin"));
-});
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -96,7 +88,21 @@ builder.Services.AddSwaggerGen();
 //string randomString = GenerateRandomStringHelper.GenerateRandomString(16);
 //Console.WriteLine($"Generated Random String: {randomString}");
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // My Frontend URL
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // THIS IS IMPORTANT
+    });
+});
+
+
 var app = builder.Build();
+
+app.UseCors("AllowFrontend");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -105,9 +111,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
 app.UseMiddleware<AuthMiddleware>();
+
+app.UseHttpsRedirection();
 
 //app.UseAuthentication();
 

@@ -65,9 +65,7 @@ namespace Note_oriousWebApp.API.Services
 
             // If no Users found, throw an exception
             if (getAllUsers == null || getAllUsers.Count == 0)
-            {
-                throw new Exception("Users not Found!");
-            }
+                return null;
 
             return getAllUsers.Select(getAllUsers => new UserResponseDTO
             {
@@ -89,9 +87,7 @@ namespace Note_oriousWebApp.API.Services
 
             // Throw exception if User not found
             if (getUser == null)
-            {
-                throw new Exception($"User not Found with ID: {id}");
-            }
+                return null;
 
             return new UserResponseDTO
             {
@@ -111,14 +107,12 @@ namespace Note_oriousWebApp.API.Services
         {
             var isUserExisting = await _usersRepository.GetUserByID(id);
             if (isUserExisting == null)
-            {
-                throw new Exception("User not Found!");
-            }
+                return null;
 
             isUserExisting.Firstname = updateUserDTO.Firstname;
             isUserExisting.Lastname = updateUserDTO.Lastname;
             isUserExisting.Email = updateUserDTO.Email;
-            isUserExisting.UpdatedAt = updateUserDTO.UpdatedAt;
+            isUserExisting.UpdatedAt = DateTime.UtcNow;
 
             var updateUser = await _usersRepository.Update(isUserExisting);
 
@@ -140,11 +134,9 @@ namespace Note_oriousWebApp.API.Services
         {
             var isUserExisting = await _usersRepository.GetUserAndAccountByID(id);
             if (isUserExisting == null)
-            {
-                throw new Exception("User not Found!");
-            }
+                return null;
 
-            isUserExisting.UpdatedAt = softDeleteUserDTO.UpdatedAt;
+            isUserExisting.UpdatedAt = DateTime.UtcNow;
             isUserExisting.DeletedAt = softDeleteUserDTO.DeletedAt;
 
             if (isUserExisting.Account != null)
@@ -158,7 +150,7 @@ namespace Note_oriousWebApp.API.Services
                 foreach (var note in isUserExisting.Notes)
                 {
                     note.DeletedAt = softDeleteUserDTO.DeletedAt;
-                    note.UpdatedAt = softDeleteUserDTO.UpdatedAt;
+                    note.UpdatedAt = DateTime.UtcNow;
                 }
             }
 
@@ -176,35 +168,6 @@ namespace Note_oriousWebApp.API.Services
                 DeletedAt = softDeleteuser.DeletedAt
             };
         }
-
-        // AUTHENTICATE/LOGIN a User Method
-        //public async Task<UserAuthResponseDTO> Auth(string email, string password)
-        //{
-        //    var user = await _usersRepository.Auth(email);
-        //    if (user == null)
-        //        return null;
-
-        //    var isPasswordValid = PasswordHelper.VerifyPassword(password, user.Account.Password);
-        //    if (!isPasswordValid)
-        //        return null;
-
-        //    var payload = new Dictionary<string, string>
-        //    {
-        //        { "id", user.Id.ToString() },
-        //        { "email", user.Email }
-        //    };
-
-        //    var accessToken = _tokenHelper.GenerateAccessToken(payload);
-        //    var refreshToken = _tokenHelper.GenerateRefreshToken(payload);
-
-        //    return new UserAuthResponseDTO
-        //    {
-        //        Id = user.Id,
-        //        Email = user.Email,
-        //        AccessToken = accessToken,
-        //        RefreshToken = refreshToken
-        //    };
-        //}
 
     }
 }

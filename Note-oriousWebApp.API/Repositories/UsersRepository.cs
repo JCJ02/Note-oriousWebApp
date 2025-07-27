@@ -84,13 +84,5 @@ namespace Note_oriousWebApp.API.Repositories
             return user;
         }
 
-        // AUTHENTICATION/LOGIN User Method
-        //public async Task<UsersModel?> Auth(string email)
-        //{
-        //    return await _context.Users
-        //        .Where(user => user.Email == email && user.DeletedAt == null)
-        //        .Include(user => user.Account)
-        //        .FirstOrDefaultAsync();
-        //}
     }
 }

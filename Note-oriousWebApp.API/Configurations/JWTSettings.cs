@@ -4,6 +4,8 @@
     {
         public string SecretKey { get; set; } = string.Empty;
         public string RefreshKey { get; set; } = string.Empty;
+        public string Issuer { get; set; } = string.Empty;
+        public string Audience {  get; set; } = string.Empty;
         public int ExpiresIn { get; set; }
         public int RefreshExpiresIn { get; set; }
     }
