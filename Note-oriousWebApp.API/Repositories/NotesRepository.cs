@@ -23,11 +23,19 @@ namespace Note_oriousWebApp.API.Repositories
             return note;
         }
 
-        // GET Notes Method
-        public async Task<List<NotesModel>> GetNotes()
+        // GET Notes By User ID Method
+        public async Task<List<NotesModel>> GetNotes(int userId)
         {
             return await _context.Notes
-                .Where(notes => notes.DeletedAt == null)
+                .Where(notes => notes.UserId == userId && notes.DeletedAt == null && notes.IsArchive == false)
+                .ToListAsync();
+        }
+
+        // GET Notes Method
+        public async Task<List<NotesModel>> GetArchiveNotes(int userId)
+        {
+            return await _context.Notes
+                .Where(notes => notes.UserId == userId && notes.DeletedAt == null && notes.IsArchive == true)
                 .ToListAsync();
         }
 
@@ -57,6 +65,30 @@ namespace Note_oriousWebApp.API.Repositories
 
         // SOFT-DELETE a Note Method
         public async Task<NotesModel> SoftDelete(NotesModel notes)
+        {
+            _context.Notes.Update(notes);
+            await _context.SaveChangesAsync();
+            return notes;
+        }
+
+        // DELETE a Note Method
+        public async Task Delete(int id)
+        {
+            await _context.Notes
+                .Where(note => note.Id == id)
+                .ExecuteDeleteAsync();
+        }
+
+        // GET Soft-Deleted Notes Method
+        public async Task<List<NotesModel>> GetSoftDeletedNotes(int userId)
+        {
+            return await _context.Notes
+                .Where(notes => notes.UserId == userId && notes.DeletedAt != null)
+                .ToListAsync();
+        }
+
+        // ARCHIVE a Note Method
+        public async Task<NotesModel> ArchiveNote(NotesModel notes)
         {
             _context.Notes.Update(notes);
             await _context.SaveChangesAsync();
