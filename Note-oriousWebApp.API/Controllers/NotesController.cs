@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Note_oriousWebApp.API.DTOs.Notes;
 using Note_oriousWebApp.API.DTOs.NotesDTOs;
 using Note_oriousWebApp.API.Services;
