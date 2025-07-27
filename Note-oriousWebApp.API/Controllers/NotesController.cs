@@ -161,8 +161,8 @@ namespace note_oriouswebapp.api.controllers
         }
 
         // GET Soft-Deleted Notes Method
-        // GET /api/Notes/soft-deleted-notes-list/{userId}
-        [HttpGet("soft-deleted-notes-list/{userId}")]
+        // GET /api/Notes/soft-deleted-list/{userId}
+        [HttpGet("soft-deleted-list/{userId}")]
         public async Task<IActionResult> GetSoftDeletedNotes(int userId)
         {
             try
