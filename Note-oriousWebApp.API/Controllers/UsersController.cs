@@ -159,7 +159,7 @@ namespace Note_oriousWebApp.API.Controllers
 
         // SOFT-DELETE a User Method
         // DELETE /api/Users/{id}
-        [HttpDelete("{id}")]
+        [HttpDelete("soft-delete/{id}")]
         public async Task<IActionResult> SoftDelete(int id, [FromBody] SoftDeleteUserDTO softDeleteUserDTO)
         {
             try
