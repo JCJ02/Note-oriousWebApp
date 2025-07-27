@@ -21,15 +21,26 @@ namespace Note_oriousWebApp.API.Middlewares
             var path = context.Request.Path.Value?.ToString();
             var method = context.Request.Method; // "GET", "POST", "PUT", "DELETE"
 
-            if ((path == "/api/Auth" && method == "POST") || (path == "/api/Users" && method == "POST"))
+            if (
+                (path != null && path.StartsWith("/api/Auth") && method == "POST") ||
+                (path != null && path.StartsWith("/api/Users") && method == "POST") ||
+                (path != null && path.StartsWith("/api/Auth/validate-access-token") && method == "GET") ||
+                (path != null && path.StartsWith("/api/Auth/validate-refresh-token") && method == "GET")
+            )
             {
                 await _next(context);
                 return;
             }
 
+
             var token = context.Request.Headers["Authorization"].ToString().Replace("Bearer", "").Trim();
 
-            if(string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(token))
+            {
+                token = context.Request.Cookies["accessToken"];
+            }
+
+            if (string.IsNullOrEmpty(token))
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 await context.Response.WriteAsync("Token is Missing!");

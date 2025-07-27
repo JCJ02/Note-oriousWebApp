@@ -32,7 +32,7 @@ namespace Note_oriousWebApp.API.Services
             var payload = new Dictionary<string, string>
             {
                 { "id", user.Id.ToString() },
-                { "email", user.Email },
+                { ClaimTypes.Email, user.Email },
                 { ClaimTypes.Role, user.Role }
             };
 

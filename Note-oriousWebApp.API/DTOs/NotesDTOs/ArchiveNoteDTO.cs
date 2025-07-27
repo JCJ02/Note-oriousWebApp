@@ -1,8 +1,8 @@
 ﻿namespace Note_oriousWebApp.API.DTOs.NotesDTOs
 {
-    public class SoftDeleteNoteDTO
+    public class ArchiveNoteDTO
     {
+        public bool IsAchive { get; set; } = true;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime DeletedAt { get; set; } = DateTime.UtcNow;
     }
 }
