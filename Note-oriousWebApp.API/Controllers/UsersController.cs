@@ -6,7 +6,7 @@ using Note_oriousWebApp.API.Services;
 namespace Note_oriousWebApp.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")] // This sets the base endpoint to: api/users
+    [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
         // Call the UsersService Class
