@@ -109,6 +109,8 @@ namespace Note_oriousWebApp.API.Services
                 Id = softDeletedNote.Id,
                 Title = softDeletedNote.Title,
                 Content = softDeletedNote.Content,
+                IsArchive = softDeletedNote.IsArchive,
+                Reminder = softDeletedNote.Reminder,
                 CreatedAt = softDeletedNote.CreatedAt,
                 UpdatedAt = softDeletedNote.UpdatedAt,
                 DeletedAt = softDeletedNote.DeletedAt,
@@ -116,10 +118,36 @@ namespace Note_oriousWebApp.API.Services
             };
         }
 
+        // RESTORE SOFT-DELETED Note Method
+        public async Task<NoteResponseDTO> RestoreSoftDeleted(int id)
+        {
+            var isNoteExisting = await _notesRepository.GetSoftDeletedNoteByID(id);
+            if (isNoteExisting == null)
+                return null;
+
+            isNoteExisting.UpdatedAt = DateTime.UtcNow;
+            isNoteExisting.DeletedAt = null;
+
+            var restoreSoftDeletedNote = await _notesRepository.RestoreSoftDeleted(isNoteExisting);
+
+            return new NoteResponseDTO
+            {
+                Id = restoreSoftDeletedNote.Id,
+                Title = restoreSoftDeletedNote.Title,
+                Content = restoreSoftDeletedNote.Content,
+                IsArchive = restoreSoftDeletedNote.IsArchive,
+                Reminder = restoreSoftDeletedNote.Reminder,
+                CreatedAt = restoreSoftDeletedNote.CreatedAt,
+                UpdatedAt = restoreSoftDeletedNote.UpdatedAt,
+                DeletedAt = restoreSoftDeletedNote.DeletedAt,
+                UserID = restoreSoftDeletedNote.UserId
+            };
+        }
+
         // DELETE a Note Metho
         public async Task<bool> Delete(int id)
         {
-            var isNoteExisting = await _notesRepository.GetNoteByID(id);
+            var isNoteExisting = await _notesRepository.GetSoftDeletedNoteByID(id);
             if (isNoteExisting == null) 
                 return false;
 
@@ -137,14 +165,14 @@ namespace Note_oriousWebApp.API.Services
         }
 
         // ARCHIVE a Note Method
-        public async Task<NoteResponseDTO> ArchiveNote(int id, ArchiveNoteDTO archiveNoteDTO)
+        public async Task<NoteResponseDTO> ArchiveNote(int id)
         {
             var isNoteExisting = await _notesRepository.GetNoteByID(id);
             if (isNoteExisting == null)
                 return null;
 
-            isNoteExisting.UpdatedAt= archiveNoteDTO.UpdatedAt;
-            isNoteExisting.IsArchive = archiveNoteDTO.IsAchive;
+            isNoteExisting.UpdatedAt= DateTime.UtcNow;
+            isNoteExisting.IsArchive = true;
 
             var archiveNote = await _notesRepository.ArchiveNote(isNoteExisting);
 
@@ -159,6 +187,32 @@ namespace Note_oriousWebApp.API.Services
                 UpdatedAt = archiveNote.UpdatedAt,
                 DeletedAt = archiveNote.DeletedAt,
                 UserID = archiveNote.UserId
+            };
+        }
+
+        // UNARCHIVE a Note Method
+        public async Task<NoteResponseDTO> UnarchiveNote(int id)
+        {
+            var isNoteExisting = await _notesRepository.GetNoteByID(id);
+            if (isNoteExisting == null)
+                return null;
+
+            isNoteExisting.UpdatedAt = DateTime.UtcNow;
+            isNoteExisting.IsArchive = false;
+
+            var unarchiveNote = await _notesRepository.UnarchiveNote(isNoteExisting);
+
+            return new NoteResponseDTO
+            {
+                Id = unarchiveNote.Id,
+                Title = unarchiveNote.Title,
+                Content = unarchiveNote.Content,
+                IsArchive = unarchiveNote.IsArchive,
+                Reminder = unarchiveNote.Reminder,
+                CreatedAt = unarchiveNote.CreatedAt,
+                UpdatedAt = unarchiveNote.UpdatedAt,
+                DeletedAt = unarchiveNote.DeletedAt,
+                UserID = unarchiveNote.UserId
             };
         }
 

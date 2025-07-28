@@ -47,6 +47,14 @@ namespace Note_oriousWebApp.API.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        // GET a Soft-Deleted Note Method
+        public async Task<NotesModel?> GetSoftDeletedNoteByID(int id)
+        {
+            return await _context.Notes
+                .Where(notes => notes.Id == id && notes.DeletedAt != null)
+                .FirstOrDefaultAsync();
+        }
+
         // GET a User Method
         public async Task<UsersModel?> GetUserByID(int id)
         {
@@ -71,6 +79,14 @@ namespace Note_oriousWebApp.API.Repositories
             return notes;
         }
 
+        // RESTORE SOFT-DELETED Note Method
+        public async Task<NotesModel> RestoreSoftDeleted(NotesModel notes)
+        {
+            _context.Notes.Update(notes);
+            await _context.SaveChangesAsync();
+            return notes;
+        }
+
         // DELETE a Note Method
         public async Task Delete(int id)
         {
@@ -89,6 +105,14 @@ namespace Note_oriousWebApp.API.Repositories
 
         // ARCHIVE a Note Method
         public async Task<NotesModel> ArchiveNote(NotesModel notes)
+        {
+            _context.Notes.Update(notes);
+            await _context.SaveChangesAsync();
+            return notes;
+        }
+
+        // UNARCHIVE a Note Method
+        public async Task<NotesModel> UnarchiveNote(NotesModel notes)
         {
             _context.Notes.Update(notes);
             await _context.SaveChangesAsync();
