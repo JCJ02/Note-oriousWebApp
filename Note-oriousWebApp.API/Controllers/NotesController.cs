@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Note_oriousWebApp.API.DTOs.Notes;
 using Note_oriousWebApp.API.DTOs.NotesDTOs;
 using Note_oriousWebApp.API.Services;
@@ -141,6 +141,22 @@ namespace note_oriouswebapp.api.controllers
             }
         }
 
+        // RESTORE SOFT-DELETE a Note Method
+        // DELETE /api/Notes/restore-soft-delete/{id}
+        [HttpDelete("restore-soft-deleted/{id}")]
+        public async Task<IActionResult> RestoreSoftDeleted(int id)
+        {
+            try
+            {
+                var restoreSoftDeleteNote = await _notesService.RestoreSoftDeleted(id);
+                return Ok($"Note {id} is now Restored!");
+            }
+            catch (Exception error)
+            {
+                return StatusCode(500, error.Message);
+            }
+        }
+
         // DELETE a Note Method
         // DELETE /api/Notes/{id}
         [HttpDelete("{id}")]
@@ -152,7 +168,7 @@ namespace note_oriouswebapp.api.controllers
                 if (!noteDeleted)
                     return NotFound("Note not Found!");
 
-                return Ok(new { message = "Note Deleted Permanently!" });
+                return Ok(new { message = "Deleted Permanently!" });
             }
             catch (Exception ex)
             {
@@ -161,8 +177,8 @@ namespace note_oriouswebapp.api.controllers
         }
 
         // GET Soft-Deleted Notes Method
-        // GET /api/Notes/soft-deleted-notes-list/{userId}
-        [HttpGet("soft-deleted-notes-list/{userId}")]
+        // GET /api/Notes/soft-deleted-list/{userId}
+        [HttpGet("soft-deleted-list/{userId}")]
         public async Task<IActionResult> GetSoftDeletedNotes(int userId)
         {
             try
@@ -177,14 +193,30 @@ namespace note_oriouswebapp.api.controllers
         }
 
         // ARCHIVE a Note Method
-        // PUT /api/Notes/{id}
+        // PUT /api/Notes/archive/{id}
         [HttpPut("archive/{id}")]
-        public async Task<IActionResult> ArchiveNote(int id, [FromBody] ArchiveNoteDTO archiveNoteDTO)
+        public async Task<IActionResult> ArchiveNote(int id)
         {
             try
             {
-                var archiveNote = await _notesService.ArchiveNote(id, archiveNoteDTO);
+                var archiveNote = await _notesService.ArchiveNote(id);
                 return Ok($"Note with {id} has Archive Status: {archiveNote.IsArchive}.");
+            }
+            catch (Exception error)
+            {
+                return StatusCode(500, error.Message);
+            }
+        }
+
+        // UNARCHIVE a Note Method
+        // PUT /api/Notes/unarchive/{id}
+        [HttpPut("unarchive/{id}")]
+        public async Task<IActionResult> UnarchiveNote(int id)
+        {
+            try
+            {
+                var unarchiveNote = await _notesService.UnarchiveNote(id);
+                return Ok($"Note with {id} has Archive Status: {unarchiveNote.IsArchive}.");
             }
             catch (Exception error)
             {

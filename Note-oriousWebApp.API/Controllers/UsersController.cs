@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Note_oriousWebApp.API.DTOs.UsersDTOs;
 using Note_oriousWebApp.API.Helpers;
 using Note_oriousWebApp.API.Services;
@@ -6,7 +6,7 @@ using Note_oriousWebApp.API.Services;
 namespace Note_oriousWebApp.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")] // This sets the base endpoint to: api/users
+    [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
         // Call the UsersService Class
@@ -159,7 +159,7 @@ namespace Note_oriousWebApp.API.Controllers
 
         // SOFT-DELETE a User Method
         // DELETE /api/Users/{id}
-        [HttpDelete("{id}")]
+        [HttpDelete("soft-delete/{id}")]
         public async Task<IActionResult> SoftDelete(int id, [FromBody] SoftDeleteUserDTO softDeleteUserDTO)
         {
             try
