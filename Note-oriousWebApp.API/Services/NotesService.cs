@@ -35,6 +35,24 @@ namespace Note_oriousWebApp.API.Services
             return await _notesRepository.Create(note);
         }
 
+        // CREATE a Note with Reminder Method
+        public async Task<NotesModel> Reminder(int userId, CreateNoteDTO createNoteDTO)
+        {
+            var isUserExisting = await _notesRepository.GetUserByID(userId);
+            if (isUserExisting == null)
+                return null;
+
+            var note = new NotesModel
+            {
+                Title = createNoteDTO.Title,
+                Content = createNoteDTO.Content,
+                Reminder = createNoteDTO.Reminder,
+                UserId = userId
+            };
+
+            return await _notesRepository.Create(note);
+        }
+
         // // GET Notes By User ID Method
         public async Task<List<NotesModel>> GetNotes(int userId)
         {
@@ -51,6 +69,14 @@ namespace Note_oriousWebApp.API.Services
 
             // Return Empty Lists
             return getArchiveNotes ?? new List<NotesModel>();
+        }
+
+        // GET Notes with Reminder By User ID Method
+        public async Task<List<NotesModel>> GetNotesWithReminder(int userId)
+        {
+            var getNotesWithReminder = await _notesRepository.GetNotesWithReminder(userId);
+
+            return getNotesWithReminder ?? new List<NotesModel>();
         }
 
         // GET a Note Method

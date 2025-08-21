@@ -20,7 +20,7 @@ namespace note_oriouswebapp.api.controllers
         }
 
         // CREATE a Note Method
-        // POST /api/Notes
+        // POST /api/Notes/{userId}
         [HttpPost("{userId}")]
         public async Task<ActionResult> Create(int userId, [FromBody] CreateNoteDTO createNoteDTO)
         {
@@ -45,6 +45,32 @@ namespace note_oriouswebapp.api.controllers
             }
         }
 
+        // CREATE a Note with Reminder Method
+        // POST /api/Notes/reminder/{userId}
+        [HttpPost("reminder/{userId}")]
+        public async Task<ActionResult> Reminder(int userId, [FromBody] CreateNoteDTO createNoteDTO)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(createNoteDTO.Title))
+                {
+                    return BadRequest("Title is Required!");
+                }
+                else if (string.IsNullOrWhiteSpace(createNoteDTO.Content))
+                {
+                    return BadRequest("Content is Required!");
+                }
+
+                var create = await _notesService.Reminder(userId, createNoteDTO);
+
+                return Ok(create);
+            }
+            catch (Exception error)
+            {
+                return StatusCode(500, error.Message);
+            }
+        }
+
         // GET Notes Method
         // GET /api/Notes
         [HttpGet("list/{userId}")]
@@ -53,6 +79,22 @@ namespace note_oriouswebapp.api.controllers
             try
             {
                 var notes = await _notesService.GetNotes(userId);
+                return Ok(notes);
+            }
+            catch (Exception error)
+            {
+                return StatusCode(500, error.Message);
+            }
+        }
+
+        // GET Notes with Reminder Method
+        // GET /api/reminder-list/{userId}
+        [HttpGet("reminder-list/{userId}")]
+        public async Task<ActionResult> GetNotesWithReminder(int userId)
+        {
+            try
+            {
+                var notes = await _notesService.GetNotesWithReminder(userId);
                 return Ok(notes);
             }
             catch (Exception error)

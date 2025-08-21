@@ -39,6 +39,14 @@ namespace Note_oriousWebApp.API.Repositories
                 .ToListAsync();
         }
 
+        // GET Notes with Reminder By User ID Method
+        public async Task<List<NotesModel>> GetNotesWithReminder(int userId)
+        {
+            return await _context.Notes
+                .Where(notes => notes.UserId == userId && notes.DeletedAt == null && notes.Reminder != null)
+                .ToListAsync();
+        }
+
         // GET a Note Method
         public async Task<NotesModel?> GetNoteByID(int id)
         { 
